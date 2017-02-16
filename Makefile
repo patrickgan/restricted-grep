@@ -1,0 +1,81 @@
+# Your program must compile with 'make'
+# You must not change this file.
+
+CC = gcc
+FLAGS = -std=c99 -O0 -Wall -Werror -g -pedantic
+
+default:
+	$(CC) $(FLAGS) rgrep.c matcher.c -o rgrep
+
+clean:
+	rm -f rgrep
+	rm -rf *.dSYM
+
+check: clean default
+	test "`echo -ne "a\nb\nc" | ./rgrep 'a'`" = "a"
+	test "`echo -ne "a\n" | ./rgrep 'a'`" = "a"
+	test "`echo -ne "a" | ./rgrep '...'`" = ""
+	test "`echo -ne "abc" | ./rgrep '.b.'`" = "abc"
+	test "`echo -ne "h\naaaaah" | ./rgrep 'a+h'`" = "aaaaah"
+	test "`echo -ne "h\naaaaahhhhh" | ./rgrep 'aa+hh+'`" = "aaaaahhhhh"
+	test "`echo -ne "h\naaaaahhhhh\n" | ./rgrep 'aa+hh+'`" = "aaaaahhhhh"
+	test "`echo -ne "a" | ./rgrep 'a?a'`" = "a"
+	test "`echo -ne "woot\nwot\nwat\n" | ./rgrep 'wo?t'`" = "wot"
+	test "`echo -ne "CCCCCCC\nC+\nC++" | ./rgrep '.\+\+'`" = "C++"
+	test "`echo -ne "GG" | ./rgrep '.+'`" = "GG"
+	test "`echo -ne "woooooo_CS61C.jpg" | ./rgrep 'w.+_..61C\.jpg'`" = "woooooo_CS61C.jpg"
+	@echo "Passed sanity check."
+	@echo "Running basic custom tests."
+	test "`echo -ne "helloworld" | ./rgrep 'hello'`" = "helloworld"
+	test "`echo -ne "helloworld" | ./rgrep '.ello'`" = "helloworld"
+	test "`echo -ne "helloworld" | ./rgrep 'hel+o'`" = "helloworld"
+	test "`echo -ne "helloworld" | ./rgrep 'hel+lo'`" = "helloworld"
+	test "`echo -ne "helloworld" | ./rgrep '.+'`" = "helloworld"
+	test "`echo -ne "helloworld" | ./rgrep '.+o'`" = "helloworld"
+	test "`echo -ne "helloworld" | ./rgrep '.+.'`" = "helloworld"
+	test "`echo -ne "hell" | ./rgrep '.+l'`" = "hell"
+	test "`echo -ne "hell" | ./rgrep '.+l+'`" = "hell"
+	test "`echo -ne "hell" | ./rgrep '.+l+'`" = "hell"
+	test "`echo -ne "hell" | ./rgrep '.+l.'`" = "hell"
+	test "`echo -ne "hello" | ./rgrep '.+l.o'`" = "hello"
+	test "`echo -ne "hello" | ./rgrep '.+l+.'`" = "hello"
+	test "`echo -ne "hello" | ./rgrep '.+l+.+'`" = "hello"
+	test "`echo -ne "abc.txt" | ./rgrep '...+\.txt'`" = "abc.txt"
+	test "`echo -ne "helloworld" | ./rgrep '.+l+.+world'`" = "helloworld"
+	test "`echo -ne "helloworld" | ./rgrep 'hell?'`" = "helloworld"
+	test "`echo -ne "helloworld" | ./rgrep 'hell?o'`" = "helloworld"
+	test "`echo -ne "helloworld" | ./rgrep 'hel?lo'`" = "helloworld"
+	test "`echo -ne "helloworld" | ./rgrep 'hell.?o'`" = "helloworld"
+	test "`echo -ne "helloworld" | ./rgrep '.+o+.?world'`" = "helloworld"
+	test "`echo -ne "a" | ./rgrep '.?.'`" = "a"
+	test "`echo -ne "a" | ./rgrep '..?'`" = "a"
+	test "`echo -ne "ab" | ./rgrep '.+.?'`" = "ab"
+	test "`echo -ne "a" | ./rgrep 'a\+?'`" = "a"
+	test "`echo -ne "a++" | ./rgrep 'a\+?'`" = "a++"
+	test "`echo -ne "a++" | ./rgrep 'a\+?\+'`" = "a++"
+	test "`echo -ne "ab" | ./rgrep 'ab?b'`" = "ab"
+	test "`echo -ne "ab+" | ./rgrep 'ab?\+'`" = "ab+"
+	test "`echo -ne "ab++" | ./rgrep 'ab?\+\+'`" = "ab++"
+	test "`echo -ne "a+" | ./rgrep 'a\.?\+'`" = "a+"
+	test "`echo -ne "a." | ./rgrep 'a\.?\.'`" = "a." # error?
+	test "`echo -ne "a+" | ./rgrep 'a\+?\+'`" = "a+"
+	test "`echo -ne "a++" | ./rgrep 'a\++'`" = "a++"
+	test "`echo -ne "a2b.pdf" | ./rgrep '.2+.+'`" = "a2b.pdf"
+	test "`echo -ne "a2b.pdf" | ./rgrep '.2+.+3?'`" = "a2b.pdf"
+	test "`echo -ne "a2b.pdf" | ./rgrep '.2+.+3?\.pdf'`" = "a2b.pdf"
+	test "`echo -ne "hello+" | ./rgrep '.+\+'`" = "hello+"
+	@echo "Testing for false positives. (TODO)"
+	test "`echo -ne "abc" | ./rgrep '\.+'`" = ""
+	test "`echo -ne "...a\n.ba" | ./rgrep '\.+a'`" = "...a"
+	test "`echo -ne "." | ./rgrep '\.+'`" = "."
+	test "`echo -ne "." | ./rgrep '\.?'`" = "."
+	test "`echo -ne "a" | ./rgrep '\.?'`" = "a"
+	test "`echo -ne "a" | ./rgrep '\.'`" = ""
+	test "`echo -ne "ab" | ./rgrep 'a\++'`" = ""
+	@echo "Custom tests passed."
+	@echo "Edge cases? No problem?"
+	test "`echo -ne ".++++++a" | ./rgrep '.+\+a'`" = ".++++++a"
+	test "`echo -ne "helloworld" | ./rgrep 'hel?llo'`" = "helloworld"
+	test "`echo -ne "woo__ooo_CS61C.jpg" | ./rgrep 'w.+_..61C\.jpg'`" = "woo__ooo_CS61C.jpg"
+	test "`echo -ne "w_____CS61C.jpg" | ./rgrep 'w.+_..61C\.jpg'`" = "w_____CS61C.jpg"
+	@echo "Good job! You have accounted for those edge cases!"
